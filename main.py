@@ -10,19 +10,11 @@ from pymodbus.server import StartTcpServer
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
 import torch
-import socket
+import os
 
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(("8.8.8.8", 80))
-        return s.getsockname()[0]
-    finally:
-        s.close()
-
-def modbus_server(context, ip):
-    print(f"Starting Modbus server at {ip}:5020")
-    StartTcpServer(context, address=(ip, 5020))
+def modbus_server(context):
+    print(f"Starting Modbus server at 0.0.0.0:5020")
+    StartTcpServer(context, address=("0.0.0.0", 5020))
 
 def read_frames(process, frame_queue, width=1920, height=1080):
     while True:
@@ -43,19 +35,26 @@ def get_model(fuse = True, grad = False, half = True):
     if half:
         model = model.half()  # Use half precision for faster inference (Use if GPU supports it)
 
+    return model
+
 def main ():
-    # Get local IP
-    ip = get_local_ip()
+    if not os.path.exists("total_count.txt"):
+        with open("total_count.txt", "w") as f:
+            f.write("0")
+    # Initialize total count from file
+    with open("total_count.txt", "r") as f:
+        total_count = int(f.read().strip())
+    print(f"Initial total count: {total_count}")
 
     # Modbus context setup
     store = ModbusSlaveContext(
         hr=ModbusSequentialDataBlock(0, [0]*10)  # 10 holding registers
     )
     context = ModbusServerContext(slaves=store, single=True)
-    threading.Thread(target=modbus_server, args=(context, ip), daemon=True).start()
+    threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
 
     # Load YOLOv8 model
-    model = get_model(half = False)
+    model = get_model(fuse=True, grad=False, half=False)
 
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.10:554/h264Preview_01_main'
@@ -106,7 +105,7 @@ def main ():
         if frame_queue.empty():
             continue
         frame = frame_queue.get()
-
+        
         results = model(frame)[0]
         detections = results.boxes
 
@@ -143,7 +142,8 @@ def main ():
             if track_id not in counted_ids and x < line_position < x + w:
                 counted_ids.add(track_id)
                 total_count += 1
-                # Store total_count in register 0
+                with open("total_count.txt", "w") as f:
+                    f.write(str(total_count))
                 context[0].setValues(3, 0, [total_count])
 
             cv2.circle(frame, (int(center_x), int(center_y)), 5, (0, 0, 255), -1)
