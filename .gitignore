@@ -38,6 +38,6 @@ Thumbs.db
 
 # Project specific #
 ##################
-./runs/
+runs/
 *.ipynb
 *.jpg
