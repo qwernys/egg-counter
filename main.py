@@ -57,7 +57,7 @@ def main ():
     model = get_model(fuse=True, grad=False, half=False)
 
     # RTSP stream and resolution
-    RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.10:554/h264Preview_01_main'
+    RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
     width, height = 1920, 1080
 
     # FFmpeg command (change frame rate?)

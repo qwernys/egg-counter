@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.1-runtime-debian11
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
 # Set working directory
 WORKDIR /app
@@ -6,14 +6,18 @@ WORKDIR /app
 # Install system dependencies and Python
 RUN apt-get update && apt-get install -y \
     git \
+    cmake \
+    protobuf-compiler \
     build-essential \
     python3 \
     python3-pip \
     python3-dev \
+    libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxrender-dev \
     libxext6 \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Symlink python and pip to python3 if needed
@@ -28,7 +32,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Clone and install ByteTrack
-RUN git clone https://github.com/ifzhang/ByteTrack.git /app/ByteTrack \
+RUN git clone https://github.com/qwernys/ByteTrack.git /app/ByteTrack \
     && pip install -r /app/ByteTrack/requirements.txt \
     && cd /app/ByteTrack && python setup.py develop
 

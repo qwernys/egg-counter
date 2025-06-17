@@ -1,5 +1,6 @@
+wheel==0.45.1
 numpy==2.2.6
-opencv==4.11.0
+opencv-python==4.11.0.86
 ultralytics==8.3.150
 pymodbus==3.9.2
 cython==3.1.1 
