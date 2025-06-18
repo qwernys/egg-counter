@@ -17,10 +17,17 @@ def modbus_server(context):
     StartTcpServer(context, address=("0.0.0.0", 5020))
 
 def read_frames(process, frame_queue, width=1920, height=1080):
+    frame_size = width * height * 3
     while True:
-        raw_frame = process.stdout.read(width * height * 3)
+        raw_frame = process.stdout.read(frame_size)
         if not raw_frame:
             continue
+
+        # Check if the read frame size matches expected size
+        if len(raw_frame) != frame_size:
+            print("Frame read error or end of stream.")
+            break
+
         frame = np.frombuffer(raw_frame, dtype=np.uint8).reshape((height, width, 3)).copy()
         if not frame_queue.full():
             frame_queue.put(frame)
