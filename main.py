@@ -46,6 +46,9 @@ def main (args):
         print("Error: Cannot open stream")
         exit()
 
+    if debug:
+        print(f"Current working directory: {os.getcwd()}")
+
     if not os.path.exists("total_count.txt"):
         with open("total_count.txt", "w") as f:
             f.write("0")
