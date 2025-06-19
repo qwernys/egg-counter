@@ -26,4 +26,7 @@ git clone https://github.com/qwernys/egg-counter.git
 cd egg-counter
 docker build -t egg-counter .
 xhost +local:root
-docker run --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix egg-counter
+docker run -d --restart unless-stopped --gpus all -v /tmp/.X11-unix:/tmp/.X11-unix egg-counter --name egg-counter egg-counter python3 main.py
+
+# Debug
+docker run --rm --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix egg-counter python3 main.py --debug
