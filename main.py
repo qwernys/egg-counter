@@ -45,7 +45,8 @@ def main (args):
     if not cap.isOpened():
         print("Error: Cannot open stream")
         exit()
-
+    
+    print("*"*100)
     if debug:
         print(f"Current working directory: {os.getcwd()}")
 
