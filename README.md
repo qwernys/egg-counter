@@ -29,4 +29,5 @@ xhost +local:root
 docker run -d --restart unless-stopped --gpus all -v /tmp/.X11-unix:/tmp/.X11-unix egg-counter --name egg-counter egg-counter python3 main.py
 
 # Debug
+xhost +local:root
 docker run --rm --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix egg-counter python3 main.py --debug
