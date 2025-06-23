@@ -56,7 +56,7 @@ def main (args):
         with open(path, "w") as f:
             f.write("0")
     # Initialize total count from file
-    with open("total_count.txt", "r") as f:
+    with open(path, "r") as f:
         total_count = int(f.read().strip())
     print(f"Initial total count: {total_count}")
 
@@ -92,7 +92,7 @@ def main (args):
         if not ret:
             print("Stream read failed")
             continue
-        
+
         if debug:
             results = model(frame, verbose=True)[0]
         else:
