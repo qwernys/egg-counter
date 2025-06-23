@@ -10,6 +10,8 @@ import torch
 import os
 import argparse
 
+path = "/app/data/total_count.txt"
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Egg Counter")
 
@@ -50,8 +52,8 @@ def main (args):
     if debug:
         print(f"Current working directory: {os.getcwd()}")
 
-    if not os.path.exists("total_count.txt"):
-        with open("total_count.txt", "w") as f:
+    if not os.path.exists(path):
+        with open(path, "w") as f:
             f.write("0")
     # Initialize total count from file
     with open("total_count.txt", "r") as f:
@@ -91,7 +93,11 @@ def main (args):
             print("Stream read failed")
             continue
         
-        results = model(frame)[0]
+        if debug:
+            results = model(frame, verbose=True)[0]
+        else:
+            results = model(frame, verbose=False)[0]
+
         detections = results.boxes
 
         dets = []
