@@ -4,7 +4,7 @@
 xhost +local:root
 
 # Run docker container with debug mode and GPU access
-docker run --rm -gpus all \
+docker run --rm --gpus all \
     --name egg-counter-debug \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e DISPLAY=$DISPLAY \
