@@ -8,7 +8,7 @@ docker run --rm --gpus all \
     --name egg-counter-debug \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e DISPLAY=$DISPLAY \
-    egg-counter python3 main-py --debug 
+    egg-counter python3 main.py --debug 
 
 echo "Debug mode started for egg-counter container."
 echo "To stop the debug container, run: docker stop egg-counter-debug"
