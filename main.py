@@ -123,7 +123,7 @@ def main (args):
                 counted_ids.add(track_id)
                 total_count += 1
                 if not debug:
-                    with open("total_count.txt", "w") as f:
+                    with open(path, "w") as f:
                         f.write(str(total_count))
                     context[0].setValues(3, 0, [total_count])
             
