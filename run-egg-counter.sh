@@ -6,4 +6,4 @@ docker run -d --restart unless-stopped \
     -v $(pwd)/data:/app/data \
     -v $(pwd)/logs:/app/logs \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    egg-counter python3 main-py
+    egg-counter python3 main.py
