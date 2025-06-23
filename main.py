@@ -84,7 +84,6 @@ def main (args):
 
     line_position = width//2
     counted_ids = set()
-    total_count = 0
 
     # Main loop
     while True:
