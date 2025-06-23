@@ -58,12 +58,13 @@ def main (args):
         total_count = int(f.read().strip())
     print(f"Initial total count: {total_count}")
 
-    # Modbus context setup
-    store = ModbusSlaveContext(
-        hr=ModbusSequentialDataBlock(0, [0]*10)  # 10 holding registers
-    )
-    context = ModbusServerContext(slaves=store, single=True)
-    threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
+    if not debug:
+        # Modbus context setup
+        store = ModbusSlaveContext(
+            hr=ModbusSequentialDataBlock(0, [0]*10)  # 10 holding registers
+        )
+        context = ModbusServerContext(slaves=store, single=True)
+        threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
 
     # Load YOLOv8 model
     model = get_model(fuse=True, grad=False, half=False)
@@ -115,9 +116,10 @@ def main (args):
             if track_id not in counted_ids and x < line_position < x + w:
                 counted_ids.add(track_id)
                 total_count += 1
-                with open("total_count.txt", "w") as f:
-                    f.write(str(total_count))
-                context[0].setValues(3, 0, [total_count])
+                if not debug:
+                    with open("total_count.txt", "w") as f:
+                        f.write(str(total_count))
+                    context[0].setValues(3, 0, [total_count])
             
             # Find the corresponding detection confidence (fallback = 0.0)
             if debug:
