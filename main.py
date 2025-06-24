@@ -122,6 +122,7 @@ def main (args):
                 counted_ids.add(track_id)
                 total_count += 1
                 if not debug:
+                    print("Counted egg with ID:", track_id, "Total count:", total_count)
                     with open(path, "w") as f:
                         f.write(str(total_count))
                     context[0].setValues(3, 0, [total_count])
