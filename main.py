@@ -10,14 +10,15 @@ import torch
 import os
 import argparse
 
-path = "total_count.txt"
-#path = "/app/data/total_count.txt"
+path = "/app/data/total_count.txt"
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Egg Counter")
 
     parser.add_argument("--debug", action="store_true",
                         help="Enable debug mode")
+    parser.add_argument("--data-dir", type=str, default="/app/data", 
+                        help="Directory to store data files")
 
     return parser.parse_args()
 
@@ -38,6 +39,7 @@ def get_model(fuse = True, grad = False, half = True):
     return model
 
 def main (args):
+    path = os.path.join(args.data_dir, "total_count.txt")
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
     width, height = 1920, 1080
@@ -116,6 +118,7 @@ def main (args):
                 context[0].setValues(3, 0, [total_count])
 
 def debug (args):
+    path = os.path.join(args.data_dir, "total_count.txt")
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
     width, height = 1920, 1080
