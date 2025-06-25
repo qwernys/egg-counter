@@ -1,5 +1,6 @@
 #!/bin/bash
 
+xhost +local:root
 docker run -d --restart unless-stopped \
     --gpus all \
     --name egg-counter \
