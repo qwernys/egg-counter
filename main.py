@@ -10,8 +10,6 @@ import torch
 import os
 import argparse
 
-path = "/app/data/total_count.txt"
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Egg Counter")
 
