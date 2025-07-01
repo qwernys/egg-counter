@@ -17,6 +17,8 @@ def parse_args():
                         help="Enable debug mode")
     parser.add_argument("--data-dir", type=str, default="/app/data", 
                         help="Directory to store data files")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Enable verbose output")
 
     return parser.parse_args()
 
@@ -37,6 +39,7 @@ def get_model(fuse = True, grad = False, half = True):
     return model
 
 def main (args):
+    verbose = args.verbose
     path = os.path.join(args.data_dir, "total_count.txt")
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
@@ -59,6 +62,7 @@ def main (args):
         hr=ModbusSequentialDataBlock(0, [0]*10)  # 10 holding registers
     )
     context = ModbusServerContext(slaves=store, single=True)
+    context[0].setValues(3, 0, [total_count])  # Initialize register 0 with total count
     threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
 
     # Load YOLOv8 model
@@ -78,16 +82,22 @@ def main (args):
     line_position = height//2
     counted_ids = set()
 
+    # Initialize error state (Temporary fix for log spam at stream read failure)
+    error = False
+
     # Main loop
     while True:
         ret, frame = cap.read()
-        if not ret:
+        if not ret and not error:
             print("Stream read failed")
+            error = True
             continue
+    
+        error = False  # Reset error state on successful read
 
         frame = cv2.resize(frame, (width, height))
 
-        results = model(frame, verbose=False)[0]
+        results = model(frame, verbose=verbose)[0]
         detections = results.boxes
 
         dets = []
@@ -116,6 +126,7 @@ def main (args):
                 context[0].setValues(3, 0, [total_count])
 
 def debug (args):
+    verbose = args.verbose
     path = os.path.join(args.data_dir, "total_count.txt")
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
@@ -160,7 +171,7 @@ def debug (args):
 
         frame = cv2.resize(frame, (width, height))
 
-        results = model(frame, verbose=True)[0]
+        results = model(frame, verbose=verbose)[0]
 
         detections = results.boxes
 
