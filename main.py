@@ -9,6 +9,7 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 import torch
 import os
 import argparse
+from datetime import datetime
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Egg Counter")
@@ -38,23 +39,46 @@ def get_model(fuse = True, grad = False, half = True):
 
     return model
 
+def update_date_file(date_path, today):
+    with open(date_path, "r") as f:
+        daily_data = f.read().strip()
+        last_date = datetime.strptime(daily_data, "%Y-%m-%d").date()
+        daily_count = int(daily_data[1])
+
+    if today != last_date:
+        daily_count = 0
+        with open(date_path, "w") as f:
+            f.write(f"{today},{daily_count}")
+
+    return daily_count
+
 def main (args):
     verbose = args.verbose
-    path = os.path.join(args.data_dir, "total_count.txt")
+    count_path = os.path.join(args.data_dir, "total_count.txt")
+    date_path = os.path.join(args.data_dir, "last_date.txt")
+
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
     width, height = 1920, 1080
     cap = cv2.VideoCapture(RTSP_URL)
 
+    today = datetime.now().date()
+
+    daily_count = update_date_file(date_path, today)
+
+    if not os.path.exists(date_path):
+        with open(date_path, "w") as f:
+            f.write(f"{today},0")
+
     if not cap.isOpened():
         print("Error: Cannot open stream")
         exit()
 
-    if not os.path.exists(path):
-        with open(path, "w") as f:
+    if not os.path.exists(count_path):
+        with open(count_path, "w") as f:
             f.write("0")
     # Initialize total count from file
-    with open(path, "r") as f:
+    with open(count_path, "r") as f:
         total_count = int(f.read().strip())
 
     # Modbus context setup
@@ -87,6 +111,9 @@ def main (args):
 
     # Main loop
     while True:
+        if datetime.now().date() != today:
+            daily_count = 0
+
         ret, frame = cap.read()
         if not ret and not error:
             print("Stream read failed")
@@ -120,9 +147,15 @@ def main (args):
             if track_id not in counted_ids and y < line_position < y + h:
                 counted_ids.add(track_id)
                 total_count += 1
+                daily_count += 1
+
                 # Update Modbus register and file
-                with open(path, "w") as f:
+                with open(count_path, "w") as f:
                     f.write(str(total_count))
+                
+                with open(date_path, "w") as f:
+                    f.write(f"{today},{total_count}")
+
                 context[0].setValues(3, 0, [total_count])
 
 def debug (args):
