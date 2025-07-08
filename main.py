@@ -64,11 +64,11 @@ def main (args):
 
     today = datetime.now().date()
 
-    daily_count = update_date_file(date_path, today)
-
     if not os.path.exists(date_path):
         with open(date_path, "w") as f:
             f.write(f"{today},0")
+
+    daily_count = update_date_file(date_path, today)
 
     if not cap.isOpened():
         print("Error: Cannot open stream")
