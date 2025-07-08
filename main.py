@@ -42,8 +42,9 @@ def get_model(fuse = True, grad = False, half = True):
 def update_date_file(date_path, today):
     with open(date_path, "r") as f:
         daily_data = f.read().strip()
-        last_date = datetime.strptime(daily_data, "%Y-%m-%d").date()
-        daily_count = int(daily_data[1])
+        date_str, count_str = daily_data.split(',')
+        last_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        daily_count = int(count_str)
 
     if today != last_date:
         daily_count = 0
