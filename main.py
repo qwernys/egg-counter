@@ -155,7 +155,7 @@ def main (args):
                     f.write(str(total_count))
                 
                 with open(date_path, "w") as f:
-                    f.write(f"{today},{total_count}")
+                    f.write(f"{today},{daily_count}")
 
                 context[0].setValues(3, 0, [total_count])
 
