@@ -58,6 +58,9 @@ def main (args):
     count_path = os.path.join(args.data_dir, "total_count.txt")
     date_path = os.path.join(args.data_dir, "last_date.txt")
 
+    count_4b_path = os.path.join(args.data_dir, "count_4b.txt")
+    count_4a_path = os.path.join(args.data_dir, "count_4a.txt")
+
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
     width, height = 1920, 1080
@@ -78,9 +81,22 @@ def main (args):
     if not os.path.exists(count_path):
         with open(count_path, "w") as f:
             f.write("0")
+    if not os.path.exists(count_4b_path):
+        with open(count_4b_path, "w") as f:
+            f.write("0")
+    if not os.path.exists(count_4a_path):
+        with open(count_4a_path, "w") as f:
+            f.write("0")
+    
     # Initialize total count from file
     with open(count_path, "r") as f:
         total_count = int(f.read().strip())
+
+    with open(count_4b_path, "r") as f:
+        total_count_4b = int(f.read().strip())
+
+    with open(count_4a_path, "r") as f:
+        total_count_4a = int(f.read().strip())
 
     # Modbus context setup
     store = ModbusSlaveContext(
@@ -104,7 +120,8 @@ def main (args):
     )
     tracker = BYTETracker(byte_args)
 
-    line_position = height//2
+    hor_line = height//2
+    ver_line = width//2
     counted_ids = set()
 
     # Initialize error state (Temporary fix for log spam at stream read failure)
@@ -114,6 +131,8 @@ def main (args):
     while True:
         if datetime.now().date() != today:
             daily_count = 0
+            with open(date_path, "w") as f:
+                f.write(f"{today},{daily_count}")
 
         ret, frame = cap.read()
         if not ret and not error:
@@ -145,10 +164,14 @@ def main (args):
             track_id = int(track.track_id)
             x, y, w, h = track.tlwh
 
-            if track_id not in counted_ids and y < line_position < y + h:
+            if track_id not in counted_ids and y < hor_line < y + h:
                 counted_ids.add(track_id)
                 total_count += 1
                 daily_count += 1
+                if x + w // 2 < ver_line:
+                    total_count_4b += 1
+                else:
+                    total_count_4a += 1
 
                 # Update Modbus register and file
                 with open(count_path, "w") as f:
@@ -156,6 +179,12 @@ def main (args):
                 
                 with open(date_path, "w") as f:
                     f.write(f"{today},{daily_count}")
+
+                with open(count_4b_path, "w") as f:
+                    f.write(str(total_count_4b))
+
+                with open(count_4a_path, "w") as f:
+                    f.write(str(total_count_4a))
 
                 context[0].setValues(3, 0, [total_count])
 
@@ -193,7 +222,7 @@ def debug (args):
     )
     tracker = BYTETracker(byte_args)
 
-    line_position = height//2
+    hor_line = height//2
     counted_ids = set()
 
     # Main loop
@@ -228,7 +257,7 @@ def debug (args):
             center_x = x + w / 2
             center_y = y + h / 2
 
-            if track_id not in counted_ids and y < line_position < y + h:
+            if track_id not in counted_ids and y < hor_line < y + h:
                 counted_ids.add(track_id)
                 total_count += 1
             
@@ -249,7 +278,7 @@ def debug (args):
         cv2.putText(frame, f"FPS: {fps:.2f}", (30, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         
-        cv2.line(frame, (0, line_position), (frame.shape[1], line_position), (0, 255, 0), 2)
+        cv2.line(frame, (0, hor_line), (frame.shape[1], hor_line), (0, 255, 0), 2)
         cv2.putText(frame, f"Total Count: {total_count}", (20, 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
 
