@@ -61,6 +61,9 @@ def main (args):
     count_4b_path = os.path.join(args.data_dir, "count_4b.txt")
     count_4a_path = os.path.join(args.data_dir, "count_4a.txt")
 
+    daily_4a_path = os.path.join(args.data_dir, "daily_4a.txt")
+    daily_4b_path = os.path.join(args.data_dir, "daily_4b.txt")
+
     # RTSP stream and resolution
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
     width, height = 1920, 1080
@@ -84,9 +87,15 @@ def main (args):
     if not os.path.exists(count_4b_path):
         with open(count_4b_path, "w") as f:
             f.write("0")
+    if not os.path.exists(daily_4b_path):
+        with open(daily_4b_path, "w") as f:
+            f.write(f"{today},0")
     if not os.path.exists(count_4a_path):
         with open(count_4a_path, "w") as f:
             f.write("0")
+    if not os.path.exists(daily_4a_path):
+        with open(daily_4a_path, "w") as f:
+            f.write(f"{today},0")
     
     # Initialize total count from file
     with open(count_path, "r") as f:
@@ -97,6 +106,9 @@ def main (args):
 
     with open(count_4a_path, "r") as f:
         total_count_4a = int(f.read().strip())
+
+    daily_4b = update_date_file(daily_4b_path, today)
+    daily_4a = update_date_file(daily_4a_path, today)
 
     # Modbus context setup
     store = ModbusSlaveContext(
@@ -133,6 +145,11 @@ def main (args):
             daily_count = 0
             with open(date_path, "w") as f:
                 f.write(f"{today},{daily_count}")
+            with open(daily_4b_path, "w") as f:
+                f.write(f"{today},0")
+            with open(daily_4a_path, "w") as f:
+                f.write(f"{today},0")
+            today = datetime.now().date()
 
         ret, frame = cap.read()
         if not ret and not error:
@@ -170,8 +187,10 @@ def main (args):
                 daily_count += 1
                 if x + w // 2 < ver_line:
                     total_count_4b += 1
+                    daily_4b += 1
                 else:
                     total_count_4a += 1
+                    daily_4a += 1
 
                 # Update Modbus register and file
                 with open(count_path, "w") as f:
@@ -186,7 +205,18 @@ def main (args):
                 with open(count_4a_path, "w") as f:
                     f.write(str(total_count_4a))
 
+                with open(daily_4b_path, "w") as f:
+                    f.write(f"{today},{daily_4b}")
+
+                with open(daily_4a_path, "w") as f:
+                    f.write(f"{today},{daily_4a}")
+
                 context[0].setValues(3, 0, [total_count])
+                context[0].setValues(3, 1, [daily_count])
+                context[0].setValues(3, 2, [total_count_4b])
+                context[0].setValues(3, 3, [daily_4b])
+                context[0].setValues(3, 4, [total_count_4a])
+                context[0].setValues(3, 5, [daily_4a])
 
 def debug (args):
     verbose = args.verbose
