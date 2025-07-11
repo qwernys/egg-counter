@@ -116,6 +116,12 @@ def main (args):
     )
     context = ModbusServerContext(slaves=store, single=True)
     context[0].setValues(3, 0, [total_count])  # Initialize register 0 with total count
+    context[0].setValues(3, 1, [daily_count])  # Initialize register 1 with daily count
+    context[0].setValues(3, 2, [total_count_4b])  # Initialize register 2 with total count for 4b
+    context[0].setValues(3, 3, [daily_4b])  # Initialize register 3 with daily count for 4b
+    context[0].setValues(3, 4, [total_count_4a])  # Initialize register 4 with total count for 4a
+    context[0].setValues(3, 5, [daily_4a])  # Initialize register 5 with daily count for 4a
+    
     threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
 
     # Load YOLOv8 model
