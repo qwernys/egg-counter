@@ -11,6 +11,9 @@ import os
 import argparse
 from datetime import datetime
 
+from pymodbus.payload import BinaryPayloadBuilder
+from pymodbus.constants import Endian
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Egg Counter")
 
@@ -52,6 +55,13 @@ def update_date_file(date_path, today):
             f.write(f"{today},{daily_count}")
 
     return daily_count
+
+def get_register(value):
+    """Convert a 32-bit integer to Modbus holding register format."""
+
+    builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+    builder.add_32bit_uint(value)
+    return builder.to_registers()
 
 def main (args):
     verbose = args.verbose
@@ -115,8 +125,8 @@ def main (args):
         hr=ModbusSequentialDataBlock(0, [0]*10)  # 10 holding registers
     )
     context = ModbusServerContext(slaves=store, single=True)
-    context[0].setValues(3, 0, [total_count])  # Initialize register 0 with total count
-    context[0].setValues(3, 2, [daily_count])  # Initialize register 1 with daily count
+    context[0].setValues(3, 0, [get_register(total_count)])  # Initialize register 0 with total count
+    context[0].setValues(3, 2, [get_register(daily_count)])  # Initialize register 1 with daily count
     #context[0].setValues(3, 2, [total_count_4b])  # Initialize register 2 with total count for 4b
     #context[0].setValues(3, 3, [daily_4b])  # Initialize register 3 with daily count for 4b
     #context[0].setValues(3, 4, [total_count_4a])  # Initialize register 4 with total count for 4a
@@ -218,8 +228,8 @@ def main (args):
                 with open(daily_4a_path, "w") as f:
                     f.write(f"{today},{daily_4a}")
 
-                context[0].setValues(3, 0, [total_count])
-                context[0].setValues(3, 2, [daily_count])
+                context[0].setValues(3, 0, [get_register(total_count)])  # Update total count register
+                context[0].setValues(3, 2, [get_register(daily_count)])  # Update daily count register
                 #context[0].setValues(3, 2, [total_count_4b])
                 #context[0].setValues(3, 3, [daily_4b])
                 #context[0].setValues(3, 4, [total_count_4a])
