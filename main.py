@@ -59,7 +59,7 @@ def update_date_file(date_path, today):
 def get_register(value):
     """Convert a 32-bit integer to Modbus holding register format."""
 
-    builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+    builder = BinaryPayloadBuilder(byteorder=Endian.BIG, wordorder=Endian.BIG)
     builder.add_32bit_uint(value)
     return builder.to_registers()
 
