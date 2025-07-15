@@ -160,6 +160,8 @@ def main (args):
     while True:
         if datetime.now().date() != today:
             daily_count = 0
+            daily_4a = 0
+            daily_4b = 0
             with open(date_path, "w") as f:
                 f.write(f"{today},{daily_count}")
             with open(daily_4b_path, "w") as f:
