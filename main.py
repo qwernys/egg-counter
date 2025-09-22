@@ -23,6 +23,8 @@ def parse_args():
                         help="Directory to store data files")
     parser.add_argument("--verbose", action="store_true",
                         help="Enable verbose output")
+    parser.add_argument("camera_id", type=int, choices=[1,2,3,4], default=4,
+                        help="Camera ID (1-4)")
 
     return parser.parse_args()
 
@@ -64,6 +66,7 @@ def get_register(value):
     return builder.to_registers()
 
 def main (args):
+    cameraId = args.camera_id
     verbose = args.verbose
     count_path = os.path.join(args.data_dir, "total_count.txt")
     date_path = os.path.join(args.data_dir, "last_date.txt")
@@ -76,7 +79,7 @@ def main (args):
 
     # RTSP stream and resolution
     # rtsp://<username>:<password>@<camera_ip>:554/h264Preview_01_main
-    RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.54:554/h264Preview_01_main'
+    RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
     width, height = 1920, 1080
     cap = cv2.VideoCapture(RTSP_URL, cv2.CAP_FFMPEG)
 
