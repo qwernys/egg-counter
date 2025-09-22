@@ -78,7 +78,7 @@ def main (args):
     # rtsp://<username>:<password>@<camera_ip>:554/h264Preview_01_main
     RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.54:554/h264Preview_01_main'
     width, height = 1920, 1080
-    cap = cv2.VideoCapture(RTSP_URL)
+    cap = cv2.VideoCapture(RTSP_URL, cv2.CAP_FFMPEG)
 
     today = datetime.now().date()
 
