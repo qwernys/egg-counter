@@ -262,7 +262,7 @@ def debug (args):
     verbose = args.verbose
     path = os.path.join(args.data_dir, "total_count.txt")
     # RTSP stream and resolution
-    RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
+    RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
     width, height = 1920, 1080
     cap = cv2.VideoCapture(RTSP_URL)
 
