@@ -75,7 +75,8 @@ def main (args):
     daily_4b_path = os.path.join(args.data_dir, "daily_4b.txt")
 
     # RTSP stream and resolution
-    RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.51:554/h264Preview_01_main'
+    # rtsp://<username>:<password>@<camera_ip>:554/h264Preview_01_main
+    RTSP_URL = 'rtsp://admin:Egg%21Camera1@192.168.140.54:554/h264Preview_01_main'
     width, height = 1920, 1080
     cap = cv2.VideoCapture(RTSP_URL)
 
@@ -168,7 +169,11 @@ def main (args):
                 f.write(f"{today},0")
             with open(daily_4a_path, "w") as f:
                 f.write(f"{today},0")
+            context[0].setValues(3, 2, get_register(daily_count))  # Update daily count register
+            context[0].setValues(3, 30, get_register(daily_4a))
+            context[0].setValues(3, 34, get_register(daily_4b))
             today = datetime.now().date()
+
 
         ret, frame = cap.read()
         if not ret and not error:
