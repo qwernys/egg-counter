@@ -131,10 +131,10 @@ def main (args):
     context = ModbusServerContext(slaves=store, single=True)
     context[0].setValues(3, 0, get_register(total_count))  # Initialize register 0 with total count
     context[0].setValues(3, 2, get_register(daily_count))  # Initialize register 1 with daily count
-    context[0].setValues(3, 28, get_register(total_count_4a)) # Initialize register 14 with total count for 4a
-    context[0].setValues(3, 30, get_register(daily_4a))  # Initialize register 15 with daily count for 4a
-    context[0].setValues(3, 32, get_register(total_count_4b)) # Initialize register 16 with total count for 4b
-    context[0].setValues(3, 34, get_register(daily_4b))  # Initialize register 17 with daily count for 4b
+    context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_4a)) # Initialize register 14 with total count for 4a
+    context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_4a))  # Initialize register 15 with daily count for 4a
+    context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_4b)) # Initialize register 16 with total count for 4b
+    context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_4b))  # Initialize register 17 with daily count for 4b
 
 
     threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
@@ -173,8 +173,8 @@ def main (args):
             with open(daily_4a_path, "w") as f:
                 f.write(f"{today},0")
             context[0].setValues(3, 2, get_register(daily_count))  # Update daily count register
-            context[0].setValues(3, 30, get_register(daily_4a))
-            context[0].setValues(3, 34, get_register(daily_4b))
+            context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_4a))
+            context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_4b))
             today = datetime.now().date()
 
 
@@ -252,10 +252,10 @@ def main (args):
                 #context[0].setValues(3, 22, get_register(daily_3a))  
                 #context[0].setValues(3, 24, get_register(total_count_3b))  # Update total count for 3b
                 #context[0].setValues(3, 26, get_register(daily_3b)) 
-                context[0].setValues(3, 28, get_register(total_count_4a))  # Update total count for 4a
-                context[0].setValues(3, 30, get_register(daily_4a))
-                context[0].setValues(3, 32, get_register(total_count_4b))  # Update total count for 4b
-                context[0].setValues(3, 34, get_register(daily_4b))
+                context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_4a))  # Update total count for 4a
+                context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_4a))
+                context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_4b))  # Update total count for 4b
+                context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_4b))
 
 def debug (args):
     SAVE_DIR = os.path.join(args.data_dir, "test_image.png")
