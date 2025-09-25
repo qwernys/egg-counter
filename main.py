@@ -260,8 +260,6 @@ def main (args):
 def debug (args):
     SAVE_DIR = os.path.join(args.data_dir, "test_image.png")
 
-    os.makedirs(SAVE_DIR, exist_ok=True)
-
     cameraId = args.camera_id
     verbose = args.verbose
     path = os.path.join(args.data_dir, "total_count.txt")
