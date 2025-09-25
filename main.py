@@ -352,10 +352,12 @@ def debug (args):
         cv2.putText(frame, f"Total Count: {total_count}", (20, 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
 
-        cv2.imshow("Egg Counter", frame)
+        # cv2.imshow("Egg Counter", frame)
         if cv2.waitKey(1) == ord('q'):
             cv2.imwrite("test_frame.jpg", frame)
             break
+
+    cv2.imwrite("debug_frame.jpg", frame)
 
     cap.release()
     cv2.destroyAllWindows()
