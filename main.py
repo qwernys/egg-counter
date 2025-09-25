@@ -258,6 +258,11 @@ def main (args):
                 context[0].setValues(3, 34, get_register(daily_4b))
 
 def debug (args):
+    DATA_DIR = "/app/data"
+    SAVE_DIR = os.path.join(DATA_DIR, "images")
+
+    os.makedirs(SAVE_DIR, exist_ok=True)
+
     cameraId = args.camera_id
     verbose = args.verbose
     path = os.path.join(args.data_dir, "total_count.txt")
@@ -352,7 +357,8 @@ def debug (args):
         cv2.putText(frame, f"Total Count: {total_count}", (20, 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
         
-        cv2.imwrite("debug_frame.jpg", frame)
+        filename = os.path.join(SAVE_DIR, f"test.jpg")
+        cv2.imwrite(filename, frame)
         break
 
         # cv2.imshow("Egg Counter", frame)
