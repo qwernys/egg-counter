@@ -89,10 +89,10 @@ def main(args):
                 date_str, count_str = daily_data.split(',')
                 total_daily_xb = int(count_str)
 
-            context[0].setValues(3, 4 + (i - 1) * 8, get_register(total_count_xa))
-            context[0].setValues(3, 6 + (i - 1) * 8, get_register(total_daily_xa))
-            context[0].setValues(3, 8 + (i - 1) * 8, get_register(total_count_xb))
-            context[0].setValues(3, 10 + (i - 1) * 8, get_register(total_daily_xb))
+            context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_xa))
+            context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(total_daily_xa))
+            context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_xb))
+            context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(total_daily_xb))
 
 if __name__ == "__main__":
     args = parse_args()
