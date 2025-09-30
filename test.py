@@ -1,4 +1,3 @@
-import threading
 import cv2
 from ultralytics import YOLO
 from yolox.tracker.byte_tracker import BYTETracker
@@ -34,6 +33,12 @@ def get_model(fuse = True, grad = False, half = True):
 
     return model
 
+def write_to_file_safe(path, data):
+    temp_path = path + ".tmp"
+    with open(temp_path, "w") as f:
+        f.write(data)
+    os.replace(temp_path, path)
+
 def update_date_file(date_path, today):
     with open(date_path, "r") as f:
         daily_data = f.read().strip()
@@ -43,16 +48,13 @@ def update_date_file(date_path, today):
 
     if today != last_date:
         daily_count = 0
-        with open(date_path, "w") as f:
-            f.write(f"{today},{daily_count}")
+        write_to_file_safe(date_path, f"{today},0")
 
     return daily_count
 
 def main (args):
     cameraId = args.camera_id
     verbose = args.verbose
-    count_path = os.path.join(args.data_dir, "total_count.txt")
-    date_path = os.path.join(args.data_dir, "last_date.txt")
 
     count_xb_path = os.path.join(args.data_dir, f"count_{cameraId}b.txt")
     count_xa_path = os.path.join(args.data_dir, f"count_{cameraId}a.txt")
@@ -68,36 +70,19 @@ def main (args):
 
     today = datetime.now().date()
 
-    if not os.path.exists(date_path):
-        with open(date_path, "w") as f:
-            f.write(f"{today},0")
-
-    daily_count = update_date_file(date_path, today)
-
     if not cap.isOpened():
         print("Error: Cannot open stream")
         exit()
 
-    if not os.path.exists(count_path):
-        with open(count_path, "w") as f:
-            f.write("0")
     if not os.path.exists(count_xb_path):
-        with open(count_xb_path, "w") as f:
-            f.write("0")
+        write_to_file_safe(count_xb_path, "0")
     if not os.path.exists(daily_xb_path):
-        with open(daily_xb_path, "w") as f:
-            f.write(f"{today},0")
+        write_to_file_safe(daily_xb_path, f"{today},0")
     if not os.path.exists(count_xa_path):
-        with open(count_xa_path, "w") as f:
-            f.write("0")
+        write_to_file_safe(count_xa_path, "0")
     if not os.path.exists(daily_xa_path):
-        with open(daily_xa_path, "w") as f:
-            f.write(f"{today},0")
+        write_to_file_safe(daily_xa_path, f"{today},0")
     
-    # Initialize total count from file
-    with open(count_path, "r") as f:
-        total_count = int(f.read().strip())
-
     with open(count_xb_path, "r") as f:
         total_count_xb = int(f.read().strip())
 
@@ -131,15 +116,10 @@ def main (args):
     # Main loop
     while True:
         if datetime.now().date() != today:
-            daily_count = 0
             daily_xa = 0
             daily_xb = 0
-            with open(date_path, "w") as f:
-                f.write(f"{today},{daily_count}")
-            with open(daily_xb_path, "w") as f:
-                f.write(f"{today},0")
-            with open(daily_xa_path, "w") as f:
-                f.write(f"{today},0")
+            write_to_file_safe(daily_xb_path, f"{today},0")
+            write_to_file_safe(daily_xa_path, f"{today},0")
             today = datetime.now().date()
 
 
@@ -175,8 +155,7 @@ def main (args):
 
             if track_id not in counted_ids and y < hor_line < y + h:
                 counted_ids.add(track_id)
-                total_count += 1
-                daily_count += 1
+
                 if x + w // 2 < ver_line:
                     total_count_xb += 1
                     daily_xb += 1
@@ -185,25 +164,14 @@ def main (args):
                     daily_xa += 1
         
                 # Update Modbus register and file
-                with open(count_path, "w") as f:
-                    f.write(str(total_count))
-                
-                with open(date_path, "w") as f:
-                    f.write(f"{today},{daily_count}")
 
-                with open(count_xb_path, "w") as f:
-                    f.write(str(total_count_xb))
-
-                with open(count_xa_path, "w") as f:
-                    f.write(str(total_count_xa))
-
-                with open(daily_xb_path, "w") as f:
-                    f.write(f"{today},{daily_xb}")
-
-                with open(daily_xa_path, "w") as f:
-                    f.write(f"{today},{daily_xa}")
+                write_to_file_safe(count_xb_path, str(total_count_xb))
+                write_to_file_safe(count_xa_path, str(total_count_xa))
+                write_to_file_safe(daily_xb_path, f"{today},{daily_xb}")
+                write_to_file_safe(daily_xa_path, f"{today},{daily_xa}")
 
 def debug (args):
+    return
     SAVE_DIR = os.path.join(args.data_dir, "test_image.png")
 
     cameraId = args.camera_id
