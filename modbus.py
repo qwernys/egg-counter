@@ -37,12 +37,12 @@ def main(args):
     context = ModbusServerContext(slaves=store, single=True)
 
     ### FIIIX ###
-    context[0].setValues(3, 0, get_register(total_count))  # Initialize register 0 with total count
-    context[0].setValues(3, 2, get_register(daily_count))  # Initialize register 1 with daily count
-    context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_xa)) # Initialize register 14 with total count for 4a
-    context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_xa))  # Initialize register 15 with daily count for 4a
-    context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_xb)) # Initialize register 16 with total count for 4b
-    context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_xb))  # Initialize register 17 with daily count for 4b
+    #context[0].setValues(3, 0, get_register(total_count))  # Initialize register 0 with total count
+    #context[0].setValues(3, 2, get_register(daily_count))  # Initialize register 1 with daily count
+    #context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_xa)) # Initialize register 14 with total count for 4a
+    #context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_xa))  # Initialize register 15 with daily count for 4a
+    #context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_xb)) # Initialize register 16 with total count for 4b
+    #context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_xb))  # Initialize register 17 with daily count for 4b
 
     threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
 
