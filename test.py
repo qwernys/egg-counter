@@ -16,8 +16,10 @@ def parse_args():
                         help="Directory to store data files")
     parser.add_argument("--verbose", action="store_true",
                         help="Enable verbose output")
-    parser.add_argument("--camera_id", type=int, choices=[1,2,3,4], default=4,
+    parser.add_argument("--camera-id", type=int, choices=[1,2,3,4], default=4,
                         help="Camera ID (1-4)")
+    parser.add_argument("--line-offset", type=int, default=0,
+                        help="Offset for the counting line position")
 
     return parser.parse_args()
 
@@ -107,7 +109,7 @@ def main (args):
     tracker = BYTETracker(byte_args)
 
     hor_line = height//2
-    ver_line = width//2
+    ver_line = width//2 + args.line_offset
     counted_ids = set()
 
     # Initialize error state (Temporary fix for log spam at stream read failure)
@@ -171,12 +173,11 @@ def main (args):
                 write_to_file_safe(daily_xa_path, f"{today},{daily_xa}")
 
 def debug (args):
-    return
     SAVE_DIR = os.path.join(args.data_dir, "test_image.png")
 
     cameraId = args.camera_id
     verbose = args.verbose
-    path = os.path.join(args.data_dir, "total_count.txt")
+
     # RTSP stream and resolution
     RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
     width, height = 1920, 1080
@@ -185,14 +186,6 @@ def debug (args):
     if not cap.isOpened():
         print("Error: Cannot open stream")
         exit()
-
-    if not os.path.exists(path):
-        with open(path, "w") as f:
-            f.write("0")
-    # Initialize total count from file
-    with open(path, "r") as f:
-        total_count = int(f.read().strip())
-    print(f"Initial total count: {total_count}")
 
     # Load YOLOv8 model
     model = get_model(fuse=True, grad=False, half=False)
@@ -209,6 +202,8 @@ def debug (args):
     tracker = BYTETracker(byte_args)
 
     hor_line = height//2
+    ver_line = width//2 + args.line_offset
+    total_count = 0
     counted_ids = set()
 
     # Main loop
@@ -265,21 +260,14 @@ def debug (args):
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         
         cv2.line(frame, (0, hor_line), (frame.shape[1], hor_line), (0, 255, 0), 2)
+        cv2.line(frame, (ver_line, 0), (ver_line, frame.shape[0]), (255, 0, 0), 2)
         cv2.putText(frame, f"Total Count: {total_count}", (20, 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
     
         cv2.imwrite(SAVE_DIR, frame)
         break
-
-        # cv2.imshow("Egg Counter", frame)
-        #if cv2.waitKey(1) == ord('q'):
-        #    cv2.imwrite("test_frame.jpg", frame)
-        #    break
-
     
-
     cap.release()
-    #cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     args = parse_args()
