@@ -1,4 +1,12 @@
 import threading
+import os
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = ";".join([
+    "rtsp_transport", "tcp",        # force TCP to avoid UDP loss
+    "stimeout",        "5000000",   # 5s socket timeout (in microseconds)
+    "max_delay",       "500000",    # 0.5s reordering delay
+    "buffer_size",     "10485760",  # 10MB socket buffer
+    "reorder_queue_size","0"        # reduce frame reordering buffering
+])
 import cv2
 from ultralytics import YOLO
 from yolox.tracker.byte_tracker import BYTETracker
@@ -7,7 +15,6 @@ from pymodbus.server import StartTcpServer
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
 import torch
-import os
 import argparse
 from datetime import datetime
 
