@@ -3,13 +3,13 @@ import os
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = ";".join([
     "rtsp_transport","tcp",          # no UDP
     "rtsp_flags","prefer_tcp",
-    "stimeout","5000000",            # 5s
-    "max_delay","500000",            # 0.5s reordering window
-    "buffer_size","16777216",        # 16MB socket buffer
+    "stimeout","7000000",            # 7s
+    "max_delay","1500000",            # 1.5s reordering window
+    "buffer_size","33554432",        # 16MB socket buffer
     "fflags","+genpts+discardcorrupt",
     "probesize","5000000",
     "analyzeduration","10000000",
-    "reorder_queue_size","0",
+    "reorder_queue_size","512",
     "loglevel","error"               # cut log spam; keep errors
 ])
 import cv2
@@ -74,7 +74,7 @@ def main (args):
 
     # RTSP stream and resolution
     # rtsp://<username>:<password>@<camera_ip>:554/h264Preview_01_main
-    RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
+    RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main?tcp'
     width, height = 1920, 1080
     cap = cv2.VideoCapture(RTSP_URL, cv2.CAP_FFMPEG)
 
@@ -222,7 +222,7 @@ def debug (args):
     verbose = args.verbose
     path = os.path.join(args.data_dir, "total_count.txt")
     # RTSP stream and resolution
-    RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
+    RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main?tcp'
     width, height = 1920, 1080
     cap = cv2.VideoCapture(RTSP_URL, cv2.CAP_FFMPEG)
 
