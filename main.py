@@ -1,25 +1,12 @@
 import threading
 import os
-os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = ";".join([
-    "rtsp_transport", "tcp",        # force TCP to avoid UDP loss
-    "stimeout",        "5000000",   # 5s socket timeout (in microseconds)
-    "max_delay",       "500000",    # 0.5s reordering delay
-    "buffer_size",     "10485760",  # 10MB socket buffer
-    "reorder_queue_size","0"        # reduce frame reordering buffering
-])
 import cv2
 from ultralytics import YOLO
 from yolox.tracker.byte_tracker import BYTETracker
 from types import SimpleNamespace
-from pymodbus.server import StartTcpServer
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.datastore import ModbusSequentialDataBlock
 import torch
 import argparse
 from datetime import datetime
-
-from pymodbus.payload import BinaryPayloadBuilder
-from pymodbus.constants import Endian
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Egg Counter")
@@ -34,10 +21,6 @@ def parse_args():
                         help="Camera ID (1-4)")
 
     return parser.parse_args()
-
-def modbus_server(context):
-    print(f"Starting Modbus server at 0.0.0.0:5020")
-    StartTcpServer(context, address=("0.0.0.0", 5020))
 
 def get_model(fuse = True, grad = False, half = True):
     model = YOLO("./weights/best.pt")
@@ -64,13 +47,6 @@ def update_date_file(date_path, today):
             f.write(f"{today},{daily_count}")
 
     return daily_count
-
-def get_register(value):
-    """Convert a 32-bit integer to Modbus holding register format."""
-
-    builder = BinaryPayloadBuilder(byteorder=Endian.BIG, wordorder=Endian.BIG)
-    builder.add_32bit_uint(value)
-    return builder.to_registers()
 
 def main (args):
     cameraId = args.camera_id
@@ -131,21 +107,6 @@ def main (args):
     daily_xb = update_date_file(daily_xb_path, today)
     daily_xa = update_date_file(daily_xa_path, today)
 
-    # Modbus context setup
-    store = ModbusSlaveContext(
-        hr=ModbusSequentialDataBlock(0, [0]*34)  # 34 holding registers
-    )
-    context = ModbusServerContext(slaves=store, single=True)
-    context[0].setValues(3, 0, get_register(total_count))  # Initialize register 0 with total count
-    context[0].setValues(3, 2, get_register(daily_count))  # Initialize register 1 with daily count
-    context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_xa)) # Initialize register 14 with total count for 4a
-    context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_xa))  # Initialize register 15 with daily count for 4a
-    context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_xb)) # Initialize register 16 with total count for 4b
-    context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_xb))  # Initialize register 17 with daily count for 4b
-
-
-    threading.Thread(target=modbus_server, args=(context,), daemon=True).start()
-
     # Load YOLOv8 model
     model = get_model(fuse=True, grad=False, half=False)
 
@@ -179,9 +140,6 @@ def main (args):
                 f.write(f"{today},0")
             with open(daily_xa_path, "w") as f:
                 f.write(f"{today},0")
-            context[0].setValues(3, 2, get_register(daily_count))  # Update daily count register
-            context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_xa))
-            context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_xb))
             today = datetime.now().date()
 
 
@@ -226,7 +184,7 @@ def main (args):
                     total_count_xa += 1
                     daily_xa += 1
 
-                # Update Modbus register and file
+                # Update files
                 with open(count_path, "w") as f:
                     f.write(str(total_count))
                 
@@ -244,25 +202,6 @@ def main (args):
 
                 with open(daily_xa_path, "w") as f:
                     f.write(f"{today},{daily_xa}")
-
-                context[0].setValues(3, 0, get_register(total_count))  # Update total count register
-                context[0].setValues(3, 2, get_register(daily_count))  # Update daily count register
-                #context[0].setValues(3, 4, get_register(total_count_1a))  # Update total count for 1a
-                #context[0].setValues(3, 6, get_register(daily_1a))
-                #context[0].setValues(3, 8, get_register(total_count_1b))  # Update total count for 1b
-                #context[0].setValues(3, 10, get_register(daily_1b))
-                #context[0].setValues(3, 12, get_register(total_count_2a))  # Update total count for 2a
-                #context[0].setValues(3, 14, get_register(daily_2a))
-                #context[0].setValues(3, 16, get_register(total_count_2b))  # Update total count for 2b
-                #context[0].setValues(3, 18, get_register(daily_2b))
-                #context[0].setValues(3, 20, get_register(total_count_3a))  # Update total count for 3a
-                #context[0].setValues(3, 22, get_register(daily_3a))  
-                #context[0].setValues(3, 24, get_register(total_count_3b))  # Update total count for 3b
-                #context[0].setValues(3, 26, get_register(daily_3b)) 
-                context[0].setValues(3, 4 + (cameraId - 1) * 8, get_register(total_count_xa))  # Update total count for 4a
-                context[0].setValues(3, 6 + (cameraId - 1) * 8, get_register(daily_xa))
-                context[0].setValues(3, 8 + (cameraId - 1) * 8, get_register(total_count_xb))  # Update total count for 4b
-                context[0].setValues(3, 10 + (cameraId - 1) * 8, get_register(daily_xb))
 
 def debug (args):
     SAVE_DIR = os.path.join(args.data_dir, "test_image.png")
