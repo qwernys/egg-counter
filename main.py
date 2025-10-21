@@ -313,6 +313,7 @@ def debug (args):
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
     
         cv2.imwrite(SAVE_DIR, frame)
+        print("Debug image saved to", SAVE_DIR)
         break
 
         # cv2.imshow("Egg Counter", frame)
