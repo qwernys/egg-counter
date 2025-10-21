@@ -1,5 +1,17 @@
 import threading
 import os
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = ";".join([
+    "rtsp_transport","tcp",          # no UDP
+    "rtsp_flags","prefer_tcp",
+    "stimeout","5000000",            # 5s
+    "max_delay","500000",            # 0.5s reordering window
+    "buffer_size","16777216",        # 16MB socket buffer
+    "fflags","+genpts+discardcorrupt",
+    "probesize","5000000",
+    "analyzeduration","10000000",
+    "reorder_queue_size","0",
+    "loglevel","error"               # cut log spam; keep errors
+])
 import cv2
 from ultralytics import YOLO
 from yolox.tracker.byte_tracker import BYTETracker
@@ -212,7 +224,7 @@ def debug (args):
     # RTSP stream and resolution
     RTSP_URL = f'rtsp://admin:Egg%21Camera1@192.168.140.5{cameraId}:554/h264Preview_01_main'
     width, height = 1920, 1080
-    cap = cv2.VideoCapture(RTSP_URL)
+    cap = cv2.VideoCapture(RTSP_URL, cv2.CAP_FFMPEG)
 
     if not cap.isOpened():
         print("Error: Cannot open stream")
